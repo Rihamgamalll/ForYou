@@ -236,9 +236,11 @@ export default function CreatePage() {
   const shareOrigin = configuredOrigin || browserOrigin;
   const shareUrl = createdId ? `${shareOrigin}/gift/${createdId}?lang=${lang}` : "";
   const isLocalShare = !!shareUrl && /localhost|127\.0\.0\.1/i.test(shareUrl);
-  const whatsappText = isArabic
-    ? `عملتلك مفاجأة صغيرة 🤍\nافتحها من هنا:\n${shareUrl}\n\nالباسورد: ${createdPassword}`
-    : `I made you a little surprise 🤍\nOpen it here:\n${shareUrl}\n\nPassword: ${createdPassword}`;
+  const giftEmoji = "\u{1F48C}";
+
+const whatsappText = isArabic
+  ? `عملتلك مفاجأة صغيرة ${giftEmoji}\nافتحها من هنا:\n${shareUrl}\n\nالباسورد: ${createdPassword}`
+  : `I made you a little surprise ${giftEmoji}\nOpen it here:\n${shareUrl}\n\nPassword: ${createdPassword}`;
   const whatsappUrl = `https://wa.me/?text=${encodeURIComponent(whatsappText)}`;
 
   const copyToClipboard = async (text: string, type: "link" | "password") => {
@@ -253,7 +255,13 @@ export default function CreatePage() {
     if (!shareUrl) return;
     if (navigator.share) {
       try {
-        await navigator.share({ title: "ForYou", text: isArabic ? "مفاجأة صغيرة ليك 🤍" : "A little surprise for you 🤍", url: shareUrl });
+        await navigator.share({
+          title: "ForYou",
+          text: isArabic
+            ? `مفاجأة صغيرة ليك ${giftEmoji}`
+            : `A little surprise for you ${giftEmoji}`,
+          url: shareUrl,
+        });
         return;
       } catch {}
     }
