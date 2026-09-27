@@ -22,11 +22,9 @@ export const OCCASION_META: OccasionMeta[] = [
     note: { ar: "لتهنئة عيد الميلاد", en: "For a birthday message" },
     accent: "#e96b63",
     soft: "#fff3f0",
-    images: [
-      "https://images.unsplash.com/photo-1683608096487-030960cbf6fb?auto=format&fit=crop&w=1000&q=84",
-    ],
-    imageAlt: { ar: "قطة حقيقية أمام تورتة عيد ميلاد", en: "A real cat in front of a birthday cake" },
-    finale: { ar: "كل سنة وأنت طيب 🤍", en: "Happy birthday 🤍" },
+    images: ["/reactions/birthday-balloon.png"],
+    imageAlt: { ar: "رسمة عيد ميلاد ببالونة وتورتة", en: "A playful birthday drawing with a balloon and cake" },
+    finale: { ar: "عيد ميلاد سعيد", en: "Happy birthday" },
   },
   {
     key: "Graduation",
@@ -37,7 +35,7 @@ export const OCCASION_META: OccasionMeta[] = [
     soft: "#f3f1ff",
     images: ["/reactions/graduation-zaghroota.png"],
     imageAlt: { ar: "رد فعل احتفالي للتخرج", en: "A celebratory graduation reaction" },
-    finale: { ar: "مبروك التخرج 🎓", en: "Congratulations on graduating 🎓" },
+    finale: { ar: "مبروك التخرج", en: "Graduation" },
   },
   {
     key: "Congratulations",
@@ -48,7 +46,7 @@ export const OCCASION_META: OccasionMeta[] = [
     soft: "#fff2f7",
     images: ["/reactions/congrats-heart.png"],
     imageAlt: { ar: "قطة مع قلب مكتوب عليه أنا فخور بك", en: "A cat with an I'm proud of you heart" },
-    finale: { ar: "مبروك 🤍", en: "Congratulations 🤍" },
+    finale: { ar: "مبروك", en: "Congratulations" },
   },
   {
     key: "Thank You",
@@ -59,7 +57,7 @@ export const OCCASION_META: OccasionMeta[] = [
     soft: "#eef9f5",
     images: ["/reactions/thank-you-kid.png", "/reactions/thank-you-cat.png"],
     imageAlt: { ar: "ردود فعل لطيفة للشكر", en: "Cute thank-you reactions" },
-    finale: { ar: "شكرًا بجد 🤍", en: "Thank you, truly 🤍" },
+    finale: { ar: "شكرًا", en: "Thank you" },
   },
   {
     key: "Miss You",
@@ -70,7 +68,7 @@ export const OCCASION_META: OccasionMeta[] = [
     soft: "#fff7ec",
     images: ["/reactions/miss-you.png"],
     imageAlt: { ar: "رد فعل لشخص مشتاق", en: "A missing-you reaction" },
-    finale: { ar: "وحشتني 🤍", en: "I miss you 🤍" },
+    finale: { ar: "وحشتني", en: "Miss you" },
   },
   {
     key: "Love",
@@ -81,7 +79,7 @@ export const OCCASION_META: OccasionMeta[] = [
     soft: "#fff2f3",
     images: ["/reactions/love-hug.png"],
     imageAlt: { ar: "حضن لطيف للحب", en: "An affectionate hug reaction" },
-    finale: { ar: "بحبك 🤍", en: "Love you 🤍" },
+    finale: { ar: "حب", en: "Love" },
   },
 ];
 

@@ -142,25 +142,92 @@ export default function GiftPage() {
 function MessageStage({ gift, lang, isArabic }: { gift: Gift; lang: "ar" | "en"; isArabic: boolean }) {
   const t = copy[lang];
   const meta = occasionByKey(gift.occasion);
+  const occasionClass = gift.occasion.toLowerCase().replace(/\s+/g, "-");
 
   return (
-    <motion.section initial={{ opacity:0, y:12 }} animate={{ opacity:1, y:0 }} transition={{ duration:.62 }} className="gift-message-stage gift-message-stage--clean" style={{"--gift-accent":meta.accent,"--gift-soft":meta.soft} as React.CSSProperties}>
-      <div className="gift-message-wrap gift-message-wrap--clean">
-        <motion.div className="gift-reaction-column" initial={{opacity:0,y:16}} animate={{opacity:1,y:0}} transition={{delay:.05,duration:.55}}>
+    <motion.section
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      transition={{ duration: 0.5 }}
+      className={`gift-message-stage-v7 gift-message-stage-v7--${occasionClass}`}
+      style={{ "--gift-accent": meta.accent, "--gift-soft": meta.soft } as React.CSSProperties}
+    >
+      <div className="gift-message-orb-v7 gift-message-orb-v7--one" aria-hidden="true" />
+      <div className="gift-message-orb-v7 gift-message-orb-v7--two" aria-hidden="true" />
+
+      <div className="gift-message-wrap-v7">
+        <motion.div
+          className="gift-reaction-v7"
+          initial={{ opacity: 0, y: 26, scale: 0.96 }}
+          animate={{ opacity: 1, y: 0, scale: 1 }}
+          transition={{ duration: 0.72, ease: [0.16, 1, 0.3, 1] }}
+        >
           <OccasionReaction meta={meta} lang={lang} />
-          <div className="gift-reaction-caption"><span>{meta.emoji}</span><b>{meta.finale[lang]}</b></div>
+          <motion.div
+            className="gift-reaction-caption-v7"
+            initial={{ opacity: 0, y: 8 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.42, duration: 0.45 }}
+          >
+            <span>{meta.emoji}</span>
+            <b>{meta.finale[lang]}</b>
+          </motion.div>
         </motion.div>
 
-        <motion.div className="gift-letter-column" initial={{opacity:0,y:20}} animate={{opacity:1,y:0}} transition={{delay:.12,duration:.6,ease:[.16,1,.3,1]}}>
-          <div className="gift-letter-kicker">{meta.label[lang]}</div>
-          <h1>{t.messageFor} {gift.recipientName}</h1>
-          <div className="gift-letter-card gift-letter-card--clean">
-            <p>{gift.message}</p>
-            {gift.creatorName && <footer>{t.from} {gift.creatorName}</footer>}
+        <motion.article
+          className="gift-letter-v7"
+          initial={{ opacity: 0, y: 46, rotate: isArabic ? 1.2 : -1.2, scale: 0.97 }}
+          animate={{ opacity: 1, y: 0, rotate: 0, scale: 1 }}
+          transition={{ delay: 0.52, duration: 0.75, ease: [0.16, 1, 0.3, 1] }}
+        >
+          <div className="gift-letter-top-v7">
+            <span>ForYou</span>
+            <span>{meta.label[lang]}</span>
           </div>
-          <Link href={`/create?lang=${lang}`} className="gift-create-own">{t.makeOne} <Sparkles size={14}/></Link>
-        </motion.div>
+
+          <div className="gift-letter-recipient-v7">
+            <small>{isArabic ? "إلى" : "To"}</small>
+            <strong>{gift.recipientName}</strong>
+          </div>
+
+          <motion.p
+            initial={{ opacity: 0, y: 10, filter: "blur(8px)" }}
+            animate={{ opacity: 1, y: 0, filter: "blur(0px)" }}
+            transition={{ delay: 0.9, duration: 0.72, ease: [0.16, 1, 0.3, 1] }}
+          >
+            {gift.message}
+          </motion.p>
+
+          {gift.creatorName && (
+            <motion.footer
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ delay: 1.15, duration: 0.45 }}
+            >
+              {t.from} {gift.creatorName}
+            </motion.footer>
+          )}
+
+          <motion.div
+            className="gift-letter-seal-v7"
+            initial={{ scale: 0, rotate: -25 }}
+            animate={{ scale: 1, rotate: -6 }}
+            transition={{ delay: 1.08, type: "spring", stiffness: 210, damping: 16 }}
+            aria-hidden="true"
+          >
+            ♡
+          </motion.div>
+        </motion.article>
       </div>
+
+      <motion.div
+        className="gift-message-after-v7"
+        initial={{ opacity: 0, y: 10 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 1.25, duration: 0.45 }}
+      >
+        <Link href={`/create?lang=${lang}`}>{t.makeOne} <Sparkles size={13} /></Link>
+      </motion.div>
     </motion.section>
   );
 }

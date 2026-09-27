@@ -6,7 +6,6 @@ import {
   ArrowDown,
   ArrowUpRight,
   Check,
-  Link2,
   LockKeyhole,
   MessageCircleHeart,
   Send,
@@ -44,15 +43,6 @@ const copy = {
     occKicker: "المناسبة",
     occTitle: "اختار اللحظة اللي الرسالة معمولة عشانها.",
     occSub: "اختيارات واضحة وبسيطة، وكل واحدة لها لمستها داخل الرسالة.",
-    detailKicker: "التفاصيل",
-    detailTitle: "كل حاجة بسيطة. والرسالة هي الأهم.",
-    detailSub: "من أول الكتابة لحد اللينك النهائي، التجربة معمولة عشان تفضل شخصية وسهلة.",
-    messageLabel: "رسالة لـ مريم",
-    messageText: "أنا فخور بيك جدًا، وحبيت أقولها بطريقة تفضل فاكرها 🤍",
-    feature1: "إيموجيز من غير ما تسيب الكتابة",
-    feature2: "باسورد قبل ظهور الرسالة",
-    feature3: "لينك واحد سهل تبعته",
-    linkLabel: "لينك المفاجأة",
     finalKicker: "جاهز؟",
     finalTitle: "اكتب حاجة حقيقية لشخص مهم عندك.",
     finalSub: "رسالة صغيرة ممكن تعمل يوم كامل.",
@@ -82,15 +72,6 @@ const copy = {
     occKicker: "Occasions",
     occTitle: "Choose the moment the message is for.",
     occSub: "Clear options, with a small visual touch for each occasion.",
-    detailKicker: "Details",
-    detailTitle: "Everything stays simple. The message stays personal.",
-    detailSub: "From writing to sharing, every step is designed to keep the experience easy and thoughtful.",
-    messageLabel: "A message for Mariam",
-    messageText: "I’m really proud of you, and I wanted to say it in a way you’d remember 🤍",
-    feature1: "Emojis without leaving the composer",
-    feature2: "A password before the message appears",
-    feature3: "One clean link to share",
-    linkLabel: "Surprise link",
     finalKicker: "Ready?",
     finalTitle: "Send something real to someone important.",
     finalSub: "A small message can make a whole day.",
@@ -234,35 +215,10 @@ export default function LandingPage() {
                 style={{ "--occ-soft": item.soft, "--occ-accent": item.accent } as React.CSSProperties}
               >
                 <span className="fy-occasion-emoji-v4">{item.emoji}</span>
-                <span><b>{item.label[lang]}</b><small>{item.note[lang]}</small></span>
+                <span><b>{item.label[lang]}</b></span>
                 <ArrowUpRight size={16} />
               </Link>
             ))}
-          </div>
-        </section>
-
-        <section className="fy-personal-v4">
-          <div className="fy-personal-copy" data-scroll-in>
-            <span>{t.detailKicker}</span>
-            <h2>{t.detailTitle}</h2>
-            <p>{t.detailSub}</p>
-            <div className="fy-personal-points">
-              <div><i>01</i><span>{t.feature1}</span></div>
-              <div><i>02</i><span>{t.feature2}</span></div>
-              <div><i>03</i><span>{t.feature3}</span></div>
-            </div>
-          </div>
-
-          <div className="fy-personal-stage" data-scroll-in>
-            <div className="fy-message-paper">
-              <div className="fy-message-paper-top"><span>💌</span><b>{t.messageLabel}</b><i>•••</i></div>
-              <div className="fy-message-paper-body">
-                <p>{t.messageText}</p>
-                <div className="fy-emoji-cloud" aria-hidden="true"><span>🥹</span><span>🫶</span><span>✨</span><span>🤍</span><span>🎉</span></div>
-              </div>
-            </div>
-            <div className="fy-mini-lock-card"><LockKeyhole size={18}/><span>••••••</span><small>{lang === "ar" ? "باسورد خاص" : "Private password"}</small></div>
-            <div className="fy-mini-link-card"><Link2 size={18}/><span><small>{t.linkLabel}</small><b>foryou.link/…</b></span></div>
           </div>
         </section>
 

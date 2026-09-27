@@ -59,3 +59,9 @@ DROP POLICY IF EXISTS "anon_insert_gifts" ON gifts;
 CREATE POLICY "anon_insert_gifts"
 ON gifts FOR INSERT
 TO anon, authenticated WITH CHECK (true);
+
+
+-- Required when "Automatically expose new tables" is disabled in Supabase.
+GRANT USAGE ON SCHEMA public TO anon, authenticated;
+GRANT SELECT, INSERT ON TABLE public.gifts TO anon, authenticated;
+NOTIFY pgrst, 'reload schema';

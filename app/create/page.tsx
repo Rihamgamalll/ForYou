@@ -8,14 +8,15 @@ import {
   ArrowLeft,
   ArrowRight,
   Check,
+  ChevronDown,
+  ChevronUp,
   Copy,
   Eye,
   Link2,
   Lock,
   MessageCircle,
   Send,
-  ShieldCheck,
-  Sparkles,
+  SmilePlus,
 } from "lucide-react";
 import { createGift } from "@/lib/gift-service";
 import type { ExperienceType, Occasion } from "@/lib/types";
@@ -23,7 +24,6 @@ import { OCCASION_META } from "@/lib/occasion";
 import { REVEAL_META } from "@/lib/reveal";
 import { useSiteLanguage } from "@/hooks/use-site-language";
 import SiteHeader from "@/components/site/SiteHeader";
-import OccasionReaction from "@/components/site/OccasionReaction";
 import RevealExperience from "@/components/site/RevealExperience";
 
 const EMOJIS = [
@@ -32,19 +32,14 @@ const EMOJIS = [
   "🎓","🎉","🥂","🏆","🌷","⭐","🪩","🎀","💌","🧸","🍰","🤏",
   "👉","👈","🫠","😚","😘","😔","😩","🪄","🌟","💫","🌸","🌹",
   "🌻","🎈","🎁","🍓","☕","🧡","💛","💚","💙","💜","🩷","🩵",
-  "🤎","🖤","👏","🙌","🤍","🫶🏻","🥰","😊","😁","😅","🤗","😇",
+  "🤎","🖤","👏","🙌","🫶🏻","🥰","😊","😁","😅","🤗","😇",
 ];
-
-const QUICK_LINES = {
-  ar: ["حبيت أقولك حاجة…", "أنا فخور بيك جدًا 🤍", "شكرًا على كل حاجة 🫶"],
-  en: ["I wanted to tell you something…", "I'm really proud of you 🤍", "Thank you for everything 🫶"],
-};
 
 interface FormData {
   recipientName: string;
   occasion: Occasion | null;
   message: string;
-  experienceType: ExperienceType | null;
+  experienceType: ExperienceType;
   password: string;
   confirmPassword: string;
   passwordHint: string;
@@ -55,124 +50,104 @@ const initialForm: FormData = {
   recipientName: "",
   occasion: null,
   message: "",
-  experienceType: null,
+  experienceType: "envelope",
   password: "",
   confirmPassword: "",
   passwordHint: "",
   creatorName: "",
 };
 
-const pageCopy = {
+const copy = {
   ar: {
-    top: "إنشاء مفاجأة",
-    steps: ["الشخص", "المناسبة", "الرسالة", "طريقة الفتح", "الحماية", "جاهزة"],
+    top: "إنشاء رسالة",
+    home: "الرئيسية",
+    stepOf: (n: number) => `${String(n).padStart(2, "0")} / 04`,
     next: "التالي",
     back: "رجوع",
-    personOver: "1 · الشخص",
-    personTitle: "هتبعتها لمين؟",
-    personSub: "اكتب الاسم الأول.",
-    personPlaceholder: "مثلاً: مريم",
-    personEmpty: "الاسم هيظهر داخل الرسالة.",
-    personReady: (name: string) => `هنجهز الرسالة لـ ${name}.`,
-    occOver: "2 · المناسبة",
-    occTitle: "اختار المناسبة",
-    occSub: "اختار أقرب مناسبة للرسالة.",
-    msgOver: "3 · الرسالة",
-    msgTitle: "اكتب رسالتك",
-    msgSub: "اكتبها بطريقتك، قصيرة أو طويلة.",
-    emojiLabel: "إيموجيز",
-    quick: "بدايات مقترحة",
-    msgPlaceholder: (name: string) => `${name || "الاسم"}…\n\nحبيت أقولك…`,
-    revealOver: "4 · طريقة الفتح",
-    revealTitle: "اختار شكل فتح الرسالة",
-    revealSub: "اختار الشكل اللي هيظهر للشخص قبل ما يقرأ الرسالة.",
-    chooseReveal: "اختار طريقة من القائمة",
-    lockOver: "5 · الحماية",
-    lockTitle: "اختار باسورد",
-    lockSub: "الشخص هيحتاجه عشان يفتح الرسالة.",
+    detailsTitle: "ابدأ بالتفاصيل",
+    detailsSub: "الاسم والمناسبة فقط.",
+    nameLabel: "الاسم",
+    namePlaceholder: "اكتب الاسم",
+    occasionLabel: "المناسبة",
+    messageTitle: "اكتب رسالتك",
+    messageSub: "اكتبها كما تحب.",
+    messagePlaceholder: "اكتب هنا…",
+    emoji: "إيموجيز",
+    revealTitle: "اختار شكل الفتح",
+    revealSub: "اختار الشكل الأقرب للجو اللي عايزه.",
+    privacyTitle: "حماية الرسالة",
+    privacySub: "حط باسورد قبل إرسال الرابط.",
     password: "الباسورد",
-    passwordHint: "تلميح اختياري",
     confirm: "تأكيد الباسورد",
-    yourName: "اسمك — اختياري",
     passwordPh: "3 حروف على الأقل",
     confirmPh: "اكتب نفس الباسورد",
-    hintPh: "مثلاً: أول مكان اتقابلنا فيه",
-    namePh: "مثلاً: سارة",
-    safe: "الرسالة لا تظهر قبل إدخال الباسورد الصحيح.",
-    create: "إنشاء المفاجأة",
+    optional: "خيارات إضافية",
+    hint: "تلميح — اختياري",
+    hintPh: "تلميح بسيط",
+    sender: "اسم المرسل — اختياري",
+    senderPh: "اسمك",
+    create: "إنشاء الرابط",
     creating: "جاري الإنشاء…",
-    doneTag: "تم",
-    doneTitle: "المفاجأة جاهزة",
-    doneSub: "ابعت اللينك والباسورد للشخص.",
-    link: "لينك المفاجأة",
-    openLink: "فتح اللينك",
-    copyLink: "نسخ اللينك",
-    copyPass: "نسخ الباسورد",
+    doneTitle: "جاهزة للإرسال.",
+    doneSub: "ابعت الرابط والباسورد للشخص.",
+    link: "الرابط",
+    passwordLabel: "الباسورد",
+    copy: "نسخ",
     copied: "تم النسخ",
-    whatsapp: "إرسال على واتساب",
+    whatsapp: "واتساب",
     share: "مشاركة",
-    previewGift: "معاينة",
-    another: "إنشاء واحدة جديدة",
-    localNotice: "أنت فاتح الموقع محليًا. عشان اللينك يفتح عند شخص تاني، انشر الموقع واضبط NEXT_PUBLIC_SITE_URL على رابط https الخاص بالموقع.",
+    preview: "معاينة",
+    another: "رسالة جديدة",
+    localNotice: "الرابط الحالي محلي. افتح النسخة المنشورة قبل المشاركة.",
   },
   en: {
-    top: "Create a surprise",
-    steps: ["Person", "Occasion", "Message", "Reveal", "Privacy", "Done"],
+    top: "Create a message",
+    home: "Home",
+    stepOf: (n: number) => `${String(n).padStart(2, "0")} / 04`,
     next: "Continue",
     back: "Back",
-    personOver: "1 · PERSON",
-    personTitle: "Who is this for?",
-    personSub: "A first name is enough.",
-    personPlaceholder: "e.g. Mariam",
-    personEmpty: "Their name will appear inside the message.",
-    personReady: (name: string) => `We'll prepare the message for ${name}.`,
-    occOver: "2 · OCCASION",
-    occTitle: "Choose the occasion",
-    occSub: "Pick the option that best fits the message.",
-    msgOver: "3 · MESSAGE",
-    msgTitle: "Write your message",
-    msgSub: "Keep it short or make it long. Write it your way.",
-    emojiLabel: "Emojis",
-    quick: "Suggested openings",
-    msgPlaceholder: (name: string) => `${name || "Hey"}…\n\nI wanted to tell you…`,
-    revealOver: "4 · REVEAL",
-    revealTitle: "Choose how they open it",
-    revealSub: "Choose the presentation they see before reading your message.",
-    chooseReveal: "Choose a reveal from the list",
-    lockOver: "5 · PRIVACY",
-    lockTitle: "Choose a password",
-    lockSub: "They'll need it before the message is shown.",
+    detailsTitle: "Start with the details",
+    detailsSub: "Just the name and occasion.",
+    nameLabel: "Name",
+    namePlaceholder: "Enter a name",
+    occasionLabel: "Occasion",
+    messageTitle: "Write your message",
+    messageSub: "Say it your way.",
+    messagePlaceholder: "Write here…",
+    emoji: "Emojis",
+    revealTitle: "Choose how it opens",
+    revealSub: "Pick the style that fits the moment.",
+    privacyTitle: "Protect the message",
+    privacySub: "Add a password before you send the link.",
     password: "Password",
-    passwordHint: "Optional hint",
     confirm: "Confirm password",
-    yourName: "Your name — optional",
     passwordPh: "At least 3 characters",
     confirmPh: "Type the same password",
-    hintPh: "e.g. where we first met",
-    namePh: "e.g. Sara",
-    safe: "The message stays hidden until the correct password is entered.",
-    create: "Create surprise",
+    optional: "Optional details",
+    hint: "Hint — optional",
+    hintPh: "A short hint",
+    sender: "Sender name — optional",
+    senderPh: "Your name",
+    create: "Create link",
     creating: "Creating…",
-    doneTag: "Done",
-    doneTitle: "Your surprise is ready",
-    doneSub: "Send the link and password to the person.",
-    link: "Surprise link",
-    openLink: "Open link",
-    copyLink: "Copy link",
-    copyPass: "Copy password",
+    doneTitle: "Ready to send.",
+    doneSub: "Send the link and password to the recipient.",
+    link: "Link",
+    passwordLabel: "Password",
+    copy: "Copy",
     copied: "Copied",
-    whatsapp: "Send on WhatsApp",
+    whatsapp: "WhatsApp",
     share: "Share",
-    previewGift: "Preview",
-    another: "Create another",
-    localNotice: "You're running the site locally. To make the link work for someone else, deploy the site and set NEXT_PUBLIC_SITE_URL to your public https URL.",
+    preview: "Preview",
+    another: "New message",
+    localNotice: "This is a local link. Open the deployed site before sharing.",
   },
 };
 
 export default function CreatePage() {
   const router = useRouter();
   const { lang, toggleLanguage, isArabic } = useSiteLanguage("ar");
-  const t = pageCopy[lang];
+  const t = copy[lang];
   const [step, setStep] = useState(0);
   const [direction, setDirection] = useState(1);
   const [formData, setFormData] = useState<FormData>(initialForm);
@@ -181,6 +156,8 @@ export default function CreatePage() {
   const [createdId, setCreatedId] = useState<string | null>(null);
   const [createdPassword, setCreatedPassword] = useState("");
   const [copied, setCopied] = useState<"link" | "password" | null>(null);
+  const [emojiOpen, setEmojiOpen] = useState(false);
+  const [optionalOpen, setOptionalOpen] = useState(false);
 
   const goTo = (nextStep: number, dir: number) => {
     setError("");
@@ -190,11 +167,14 @@ export default function CreatePage() {
 
   const next = () => {
     setError("");
-    if (step === 0 && !formData.recipientName.trim()) return setError(isArabic ? "اكتب اسم الشخص أولًا." : "Enter the person's name first.");
-    if (step === 1 && !formData.occasion) return setError(isArabic ? "اختار المناسبة أولًا." : "Choose an occasion first.");
-    if (step === 2 && formData.message.trim().length < 5) return setError(isArabic ? "اكتب رسالة أطول قليلًا." : "Write a slightly longer message.");
-    if (step === 3 && !formData.experienceType) return setError(isArabic ? "اختار طريقة الفتح أولًا." : "Choose a reveal first.");
-    goTo(Math.min(step + 1, 4), 1);
+    if (step === 0) {
+      if (!formData.recipientName.trim()) return setError(isArabic ? "اكتب الاسم أولًا." : "Enter the name first.");
+      if (!formData.occasion) return setError(isArabic ? "اختار المناسبة." : "Choose an occasion.");
+    }
+    if (step === 1 && formData.message.trim().length < 5) {
+      return setError(isArabic ? "اكتب رسالة أطول قليلًا." : "Write a slightly longer message.");
+    }
+    goTo(Math.min(step + 1, 3), 1);
   };
 
   const prev = () => goTo(Math.max(step - 1, 0), -1);
@@ -206,9 +186,13 @@ export default function CreatePage() {
 
   const handleCreate = async () => {
     setError("");
-    if (formData.password.length < 3) return setError(isArabic ? "الباسورد لازم يكون 3 حروف على الأقل." : "Password must be at least 3 characters.");
-    if (formData.password !== formData.confirmPassword) return setError(isArabic ? "تأكيد الباسورد غير مطابق." : "The passwords do not match.");
-    if (!formData.experienceType || !formData.occasion) return;
+    if (formData.password.length < 3) {
+      return setError(isArabic ? "الباسورد لازم يكون 3 حروف على الأقل." : "Password must be at least 3 characters.");
+    }
+    if (formData.password !== formData.confirmPassword) {
+      return setError(isArabic ? "تأكيد الباسورد غير مطابق." : "The passwords do not match.");
+    }
+    if (!formData.occasion) return;
 
     setCreating(true);
     try {
@@ -223,24 +207,26 @@ export default function CreatePage() {
       });
       setCreatedId(gift.id);
       setCreatedPassword(formData.password);
-      goTo(5, 1);
+      goTo(4, 1);
     } catch {
-      setError(isArabic ? "حصل خطأ أثناء إنشاء المفاجأة. جرّب مرة أخرى." : "Something went wrong while creating the surprise. Please try again.");
+      setError(isArabic ? "تعذر إنشاء الرابط الآن. حاول مرة أخرى." : "The link couldn't be created right now. Please try again.");
     } finally {
       setCreating(false);
     }
   };
 
-  const browserOrigin = typeof window !== "undefined" ? window.location.origin : "";
-  const configuredOrigin = process.env.NEXT_PUBLIC_SITE_URL?.replace(/\/$/, "") || "";
-  const shareOrigin = configuredOrigin || browserOrigin;
+  const browserOrigin = typeof window !== "undefined" ? window.location.origin.replace(/\/$/, "") : "";
+  const configuredOrigin = process.env.NEXT_PUBLIC_SITE_URL?.trim().replace(/\/$/, "") || "";
+  const productionOrigin = configuredOrigin || "https://foryou-ri-webs.vercel.app";
+  const shareOrigin = /localhost|127\.0\.0\.1/i.test(browserOrigin) || !browserOrigin
+    ? productionOrigin
+    : browserOrigin;
   const shareUrl = createdId ? `${shareOrigin}/gift/${createdId}?lang=${lang}` : "";
-  const isLocalShare = !!shareUrl && /localhost|127\.0\.0\.1/i.test(shareUrl);
+  const isLocalShare = false;
   const giftEmoji = "\u{1F48C}";
-
-const whatsappText = isArabic
-  ? `عملتلك مفاجأة صغيرة ${giftEmoji}\nافتحها من هنا:\n${shareUrl}\n\nالباسورد: ${createdPassword}`
-  : `I made you a little surprise ${giftEmoji}\nOpen it here:\n${shareUrl}\n\nPassword: ${createdPassword}`;
+  const whatsappText = isArabic
+    ? `عندي رسالة ليك ${giftEmoji}\n${shareUrl}\n\nالباسورد: ${createdPassword}`
+    : `I made a message for you ${giftEmoji}\n${shareUrl}\n\nPassword: ${createdPassword}`;
   const whatsappUrl = `https://wa.me/?text=${encodeURIComponent(whatsappText)}`;
 
   const copyToClipboard = async (text: string, type: "link" | "password") => {
@@ -257,9 +243,7 @@ const whatsappText = isArabic
       try {
         await navigator.share({
           title: "ForYou",
-          text: isArabic
-            ? `مفاجأة صغيرة ليك ${giftEmoji}`
-            : `A little surprise for you ${giftEmoji}`,
+          text: isArabic ? `رسالة خاصة ليك ${giftEmoji}` : `A private message for you ${giftEmoji}`,
           url: shareUrl,
         });
         return;
@@ -269,36 +253,33 @@ const whatsappText = isArabic
   };
 
   const variants = {
-    enter: (dir: number) => ({ x: dir > 0 ? 26 : -26, opacity: 0, filter: "blur(4px)" }),
-    center: { x: 0, opacity: 1, filter: "blur(0px)" },
-    exit: (dir: number) => ({ x: dir > 0 ? -22 : 22, opacity: 0, filter: "blur(3px)" }),
+    enter: (dir: number) => ({ y: dir > 0 ? 12 : -8, opacity: 0 }),
+    center: { y: 0, opacity: 1 },
+    exit: (dir: number) => ({ y: dir > 0 ? -8 : 12, opacity: 0 }),
   };
 
+  const activeReveal = REVEAL_META.find((item) => item.type === formData.experienceType) ?? REVEAL_META[0];
+
   return (
-    <div className="create-page" dir={isArabic ? "rtl" : "ltr"}>
+    <div className="create-page create-page-v6" dir={isArabic ? "rtl" : "ltr"}>
       <SiteHeader lang={lang} onToggleLanguage={toggleLanguage} compact />
 
-      <main className="create-wrap">
-        <div className="create-topline">
-          <Link href={`/?lang=${lang}`} className="create-home-link">{isArabic ? "← الرئيسية" : "← Home"}</Link>
-          <span>{t.top}</span>
+      <main className="create-shell-v6">
+        <div className="create-nav-v6">
+          <Link href={`/?lang=${lang}`} className="create-back-home-v6">
+            {isArabic ? <ArrowRight size={15} /> : <ArrowLeft size={15} />}
+            {t.home}
+          </Link>
+          {step < 4 && <span>{t.stepOf(step + 1)}</span>}
         </div>
 
-        <div className="create-progress-row" aria-label={isArabic ? "تقدم إنشاء المفاجأة" : "Creation progress"}>
-          {t.steps.map((label, index) => (
-            <button
-              key={label}
-              className={`create-progress-step ${index === step ? "active" : ""} ${index < step ? "done" : ""}`}
-              onClick={() => index < step && goTo(index, -1)}
-              disabled={index > step || step === 5}
-            >
-              <i>{index < step ? <Check size={12}/> : index + 1}</i><span>{label}</span>
-            </button>
-          ))}
-          <div className="create-progress-track"><div style={{ width: `${(step / 5) * 100}%` }} /></div>
-        </div>
+        {step < 4 && (
+          <div className="create-progress-v6" aria-hidden="true">
+            <span style={{ width: `${((step + 1) / 4) * 100}%` }} />
+          </div>
+        )}
 
-        <section className="create-card">
+        <section className={`create-panel-v6 ${step === 4 ? "create-panel-v6--done" : ""}`}>
           <AnimatePresence mode="wait" custom={direction}>
             <motion.div
               key={step}
@@ -307,138 +288,242 @@ const whatsappText = isArabic
               initial="enter"
               animate="center"
               exit="exit"
-              transition={{ duration: 0.34, ease: [0.22, 1, 0.36, 1] }}
-              className="create-stage-inner"
+              transition={{ duration: 0.28, ease: [0.22, 1, 0.36, 1] }}
+              className="create-stage-v6"
             >
               {step === 0 && (
-                <StepHead overline={t.personOver} title={t.personTitle} subtitle={t.personSub}>
-                  <div className="create-name-stage">
-                    <input
-                      autoFocus
-                      className="create-name-input"
-                      value={formData.recipientName}
-                      onChange={(e) => setFormData({ ...formData, recipientName: e.target.value })}
-                      onKeyDown={(e) => e.key === "Enter" && next()}
-                      placeholder={t.personPlaceholder}
-                    />
-                    <div className="create-name-reaction">{formData.recipientName ? t.personReady(formData.recipientName) : t.personEmpty}</div>
+                <StepHead title={t.detailsTitle} subtitle={t.detailsSub}>
+                  <div className="details-grid-v6">
+                    <label className="field-v6 field-v6--name">
+                      <span>{t.nameLabel}</span>
+                      <input
+                        autoFocus
+                        value={formData.recipientName}
+                        onChange={(e) => setFormData({ ...formData, recipientName: e.target.value })}
+                        placeholder={t.namePlaceholder}
+                      />
+                    </label>
+
+                    <div className="occasion-block-v6">
+                      <span className="field-label-v6">{t.occasionLabel}</span>
+                      <div className="occasion-grid-v6">
+                        {OCCASION_META.map((occ) => (
+                          <button
+                            type="button"
+                            key={occ.key}
+                            className={`occasion-chip-v6 ${formData.occasion === occ.key ? "selected" : ""}`}
+                            onClick={() => setFormData({ ...formData, occasion: occ.key })}
+                          >
+                            <span>{occ.emoji}</span>
+                            <b>{occ.label[lang]}</b>
+                            {formData.occasion === occ.key && <Check size={14} />}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
                   </div>
                 </StepHead>
               )}
 
               {step === 1 && (
-                <StepHead overline={t.occOver} title={t.occTitle} subtitle={t.occSub}>
-                  <div className="create-occasion-grid">
-                    {OCCASION_META.map((occ) => (
-                      <button
-                        key={occ.key}
-                        className={`create-occasion-card ${formData.occasion === occ.key ? "selected" : ""}`}
-                        onClick={() => setFormData({ ...formData, occasion: occ.key })}
-                        style={{ "--occ-accent": occ.accent, "--occ-soft": occ.soft } as React.CSSProperties}
-                      >
-                        <OccasionReaction meta={occ} lang={lang} compact />
-                        <span className="create-occasion-copy"><b>{occ.label[lang]}</b><small>{occ.note[lang]}</small></span>
-                        <i className="create-occasion-check">{formData.occasion === occ.key ? "✓" : ""}</i>
-                      </button>
-                    ))}
+                <StepHead title={t.messageTitle} subtitle={t.messageSub}>
+                  <div className="message-envelope-v6">
+                    <div className="message-envelope-flap-v6" aria-hidden="true" />
+                    <div className="message-paper-v6">
+                      <div className="message-paper-head-v6">
+                        <button type="button" onClick={() => setEmojiOpen((value) => !value)}>
+                          <SmilePlus size={16} />
+                          {t.emoji}
+                          {emojiOpen ? <ChevronUp size={14} /> : <ChevronDown size={14} />}
+                        </button>
+                        <span>{formData.message.length}/1000</span>
+                      </div>
+
+                      <AnimatePresence initial={false}>
+                        {emojiOpen && (
+                          <motion.div
+                            className="emoji-tray-v6 no-scrollbar"
+                            initial={{ height: 0, opacity: 0 }}
+                            animate={{ height: "auto", opacity: 1 }}
+                            exit={{ height: 0, opacity: 0 }}
+                            transition={{ duration: 0.22 }}
+                          >
+                            {EMOJIS.map((emoji, index) => (
+                              <button type="button" key={`${emoji}-${index}`} onClick={() => appendMessage(emoji)}>{emoji}</button>
+                            ))}
+                          </motion.div>
+                        )}
+                      </AnimatePresence>
+
+                      <textarea
+                        autoFocus
+                        value={formData.message}
+                        onChange={(e) => setFormData({ ...formData, message: e.target.value })}
+                        placeholder={t.messagePlaceholder}
+                        maxLength={1000}
+                      />
+                    </div>
                   </div>
                 </StepHead>
               )}
 
               {step === 2 && (
-                <StepHead overline={t.msgOver} title={t.msgTitle} subtitle={t.msgSub}>
-                  <div className="message-box">
-                    <div className="message-emoji-head"><span>{t.emojiLabel}</span><span>{EMOJIS.length}</span></div>
-                    <div className="message-emoji-tray no-scrollbar">
-                      {EMOJIS.map((emoji, index) => <button key={`${emoji}-${index}`} onClick={() => appendMessage(emoji)} aria-label={`Add ${emoji}`}>{emoji}</button>)}
+                <StepHead title={t.revealTitle} subtitle={t.revealSub}>
+                  <div className="reveal-picker-v6">
+                    <div className="reveal-main-v6">
+                      <RevealExperience type={formData.experienceType} lang={lang} />
                     </div>
-                    <textarea
-                      autoFocus
-                      value={formData.message}
-                      onChange={(e) => setFormData({ ...formData, message: e.target.value })}
-                      placeholder={t.msgPlaceholder(formData.recipientName)}
-                      maxLength={1000}
-                    />
-                    <div className="message-box-meta"><span>{formData.message.length}/1000</span></div>
+                    <div className="reveal-strip-v6 no-scrollbar" role="list">
+                      {REVEAL_META.map((exp) => (
+                        <button
+                          type="button"
+                          key={exp.type}
+                          className={`reveal-tile-v6 ${formData.experienceType === exp.type ? "selected" : ""}`}
+                          onClick={() => setFormData({ ...formData, experienceType: exp.type })}
+                          aria-label={exp.label[lang]}
+                        >
+                          <img className={`reveal-tile-image-v7 reveal-tile-image-v7--${exp.type}`} src={exp.image} alt="" referrerPolicy="no-referrer" />
+                          <span><b>{exp.label[lang]}</b><small>{exp.short[lang]}</small></span>
+                          {formData.experienceType === exp.type && <i><Check size={13} /></i>}
+                        </button>
+                      ))}
+                    </div>
+                    <div className="reveal-selected-v6">
+                      <span>{activeReveal.label[lang]}</span>
+                    </div>
                   </div>
-                  <div className="quick-lines"><span>{t.quick}</span><div>{QUICK_LINES[lang].map((line) => <button key={line} onClick={() => appendMessage(line)}>{line}</button>)}</div></div>
                 </StepHead>
               )}
 
               {step === 3 && (
-                <StepHead overline={t.revealOver} title={t.revealTitle} subtitle={t.revealSub}>
-                  <div className="reveal-layout-v4">
-                    <div className="reveal-options-v4">
-                      {REVEAL_META.map((exp, index) => (
-                        <button
-                          key={exp.type}
-                          className={`reveal-choice-v4 reveal-choice-v4--${exp.tone} ${formData.experienceType === exp.type ? "selected" : ""}`}
-                          onClick={() => setFormData({ ...formData, experienceType: exp.type })}
+                <StepHead title={t.privacyTitle} subtitle={t.privacySub}>
+                  <div className="privacy-form-v6">
+                    <div className="privacy-row-v6">
+                      <label className="field-v6">
+                        <span>{t.password}</span>
+                        <input
+                          autoFocus
+                          type="password"
+                          value={formData.password}
+                          onChange={(e) => setFormData({ ...formData, password: e.target.value })}
+                          placeholder={t.passwordPh}
+                        />
+                      </label>
+                      <label className="field-v6">
+                        <span>{t.confirm}</span>
+                        <input
+                          type="password"
+                          value={formData.confirmPassword}
+                          onChange={(e) => setFormData({ ...formData, confirmPassword: e.target.value })}
+                          placeholder={t.confirmPh}
+                        />
+                      </label>
+                    </div>
+
+                    <button type="button" className="optional-toggle-v6" onClick={() => setOptionalOpen((value) => !value)}>
+                      <span>{t.optional}</span>
+                      {optionalOpen ? <ChevronUp size={15} /> : <ChevronDown size={15} />}
+                    </button>
+
+                    <AnimatePresence initial={false}>
+                      {optionalOpen && (
+                        <motion.div
+                          className="privacy-row-v6 privacy-row-v6--optional"
+                          initial={{ opacity: 0, y: -6 }}
+                          animate={{ opacity: 1, y: 0 }}
+                          exit={{ opacity: 0, y: -6 }}
                         >
-                          <span className="reveal-choice-number">0{index + 1}</span>
-                          <span className="reveal-choice-copy"><b>{exp.label[lang]}</b><small>{exp.short[lang]}</small></span>
-                          <span className="reveal-choice-check">{formData.experienceType === exp.type ? "✓" : ""}</span>
-                        </button>
-                      ))}
-                    </div>
-                    <div className="reveal-preview-v4">
-                      {formData.experienceType ? (
-                        <RevealExperience type={formData.experienceType} lang={lang} />
-                      ) : (
-                        <div className="reveal-empty-v4"><span>✦</span><b>{t.chooseReveal}</b></div>
+                          <label className="field-v6">
+                            <span>{t.hint}</span>
+                            <input value={formData.passwordHint} onChange={(e) => setFormData({ ...formData, passwordHint: e.target.value })} placeholder={t.hintPh} />
+                          </label>
+                          <label className="field-v6">
+                            <span>{t.sender}</span>
+                            <input value={formData.creatorName} onChange={(e) => setFormData({ ...formData, creatorName: e.target.value })} placeholder={t.senderPh} />
+                          </label>
+                        </motion.div>
                       )}
-                    </div>
+                    </AnimatePresence>
+
+                    <div className="privacy-note-v6"><Lock size={14} /><span>{isArabic ? "الرسالة لا تظهر قبل إدخال الباسورد." : "The message stays hidden until the password is entered."}</span></div>
                   </div>
                 </StepHead>
               )}
 
               {step === 4 && (
-                <StepHead overline={t.lockOver} title={t.lockTitle} subtitle={t.lockSub}>
-                  <div className="lock-grid">
-                    <label><span>{t.password}</span><input autoFocus type="password" value={formData.password} onChange={(e)=>setFormData({...formData,password:e.target.value})} placeholder={t.passwordPh}/></label>
-                    <label><span>{t.confirm}</span><input type="password" value={formData.confirmPassword} onChange={(e)=>setFormData({...formData,confirmPassword:e.target.value})} placeholder={t.confirmPh}/></label>
-                    <label><span>{t.passwordHint}</span><input value={formData.passwordHint} onChange={(e)=>setFormData({...formData,passwordHint:e.target.value})} placeholder={t.hintPh}/></label>
-                    <label><span>{t.yourName}</span><input value={formData.creatorName} onChange={(e)=>setFormData({...formData,creatorName:e.target.value})} placeholder={t.namePh}/></label>
-                  </div>
-                  <div className="lock-note"><ShieldCheck size={17}/><span>{t.safe}</span></div>
-                </StepHead>
-              )}
-
-              {step === 5 && (
-                <div className="create-success">
-                  <div className="create-success-emoji">✓</div>
-                  <span>{t.doneTag}</span>
+                <div className="done-v6">
+                  <div className="done-mark-v6"><Check size={22} /></div>
                   <h1>{t.doneTitle}</h1>
                   <p>{t.doneSub}</p>
-                  <div className="share-url">
-                    <small>{t.link}</small>
-                    <a href={shareUrl} target="_blank" rel="noopener noreferrer" dir="ltr"><Link2 size={15}/><span>{shareUrl}</span></a>
+
+                  <div className="share-box-v6">
+                    <div className="share-field-v6">
+                      <small>{t.link}</small>
+                      <div>
+                        <Link2 size={16} />
+                        <a href={shareUrl} target="_blank" rel="noopener noreferrer" dir="ltr">{shareUrl}</a>
+                        <button type="button" onClick={() => copyToClipboard(shareUrl, "link")}>
+                          {copied === "link" ? <Check size={15} /> : <Copy size={15} />}
+                        </button>
+                      </div>
+                    </div>
+                    <div className="share-field-v6 share-field-v6--pass">
+                      <small>{t.passwordLabel}</small>
+                      <div>
+                        <Lock size={16} />
+                        <span dir="ltr">{createdPassword}</span>
+                        <button type="button" onClick={() => copyToClipboard(createdPassword, "password")}>
+                          {copied === "password" ? <Check size={15} /> : <Copy size={15} />}
+                        </button>
+                      </div>
+                    </div>
                   </div>
-                  {isLocalShare && <div className="share-local-warning">{t.localNotice}</div>}
-                  <div className="share-actions share-actions--primary">
-                    <a className="whatsapp-share" href={whatsappUrl} target="_blank" rel="noopener noreferrer"><MessageCircle size={16}/>{t.whatsapp}</a>
-                    <button onClick={shareNative}><Send size={16}/>{t.share}</button>
+
+                  {isLocalShare && <div className="local-note-v6">{t.localNotice}</div>}
+
+                  <div className="share-buttons-v6">
+                    <a href={whatsappUrl} target="_blank" rel="noopener noreferrer" className="share-primary-v6"><MessageCircle size={17} />{t.whatsapp}</a>
+                    <button type="button" onClick={shareNative}><Send size={16} />{t.share}</button>
+                    <button type="button" onClick={() => router.push(`/gift/${createdId}?lang=${lang}`)}><Eye size={16} />{t.preview}</button>
                   </div>
-                  <div className="share-actions">
-                    <button onClick={() => copyToClipboard(shareUrl, "link")}>{copied === "link" ? <Check size={16}/> : <Copy size={16}/>} {copied === "link" ? t.copied : t.copyLink}</button>
-                    <button onClick={() => copyToClipboard(createdPassword, "password")}>{copied === "password" ? <Check size={16}/> : <Lock size={16}/>} {copied === "password" ? t.copied : t.copyPass}</button>
-                    <button onClick={() => router.push(`/gift/${createdId}?lang=${lang}`)}><Eye size={16}/>{t.previewGift}</button>
-                  </div>
-                  <button className="create-another" onClick={() => { setFormData(initialForm); setCreatedId(null); goTo(0, -1); }}>{t.another}</button>
+
+                  <button
+                    type="button"
+                    className="new-message-v6"
+                    onClick={() => {
+                      setFormData(initialForm);
+                      setCreatedId(null);
+                      setCreatedPassword("");
+                      setOptionalOpen(false);
+                      setEmojiOpen(false);
+                      goTo(0, -1);
+                    }}
+                  >
+                    {t.another}
+                  </button>
                 </div>
               )}
             </motion.div>
           </AnimatePresence>
 
-          {error && <motion.div className="create-error" initial={{ opacity:0, y:6 }} animate={{ opacity:1, y:0 }}>{error}</motion.div>}
+          {error && <motion.div className="create-error-v6" initial={{ opacity: 0, y: 5 }} animate={{ opacity: 1, y: 0 }}>{error}</motion.div>}
 
-          {step < 5 && (
-            <div className="create-controls">
-              <button onClick={prev} disabled={step === 0}>{isArabic ? <ArrowRight size={16}/> : <ArrowLeft size={16}/>} {t.back}</button>
-              {step < 4 ? (
-                <button className="primary" onClick={next}>{t.next} {isArabic ? <ArrowLeft size={16}/> : <ArrowRight size={16}/>}</button>
+          {step < 4 && (
+            <div className="create-actions-v6">
+              <button type="button" className="back-v6" onClick={prev} disabled={step === 0}>
+                {isArabic ? <ArrowRight size={16} /> : <ArrowLeft size={16} />}
+                {t.back}
+              </button>
+              {step < 3 ? (
+                <button type="button" className="next-v6" onClick={next}>
+                  {t.next}
+                  {isArabic ? <ArrowLeft size={16} /> : <ArrowRight size={16} />}
+                </button>
               ) : (
-                <button className="primary" onClick={handleCreate} disabled={creating}>{creating ? t.creating : t.create} {!creating && <Sparkles size={15}/>}</button>
+                <button type="button" className="next-v6" onClick={handleCreate} disabled={creating}>
+                  {creating ? t.creating : t.create}
+                  {!creating && (isArabic ? <ArrowLeft size={16} /> : <ArrowRight size={16} />)}
+                </button>
               )}
             </div>
           )}
@@ -448,10 +533,13 @@ const whatsappText = isArabic
   );
 }
 
-function StepHead({ overline, title, subtitle, children }: { overline: string; title: string; subtitle: string; children: React.ReactNode }) {
+function StepHead({ title, subtitle, children }: { title: string; subtitle: string; children: React.ReactNode }) {
   return (
     <>
-      <div className="create-step-head"><span>{overline}</span><h1>{title}</h1><p>{subtitle}</p></div>
+      <div className="step-head-v6">
+        <h1>{title}</h1>
+        <p>{subtitle}</p>
+      </div>
       {children}
     </>
   );

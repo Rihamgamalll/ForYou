@@ -1,16 +1,16 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
-import { motion } from "framer-motion";
-import { ArrowLeft, ArrowRight } from "lucide-react";
+import { useEffect, useState } from "react";
+import { AnimatePresence, motion } from "framer-motion";
+import { ArrowLeft, ArrowRight, Check } from "lucide-react";
 import type { ExperienceType } from "@/lib/types";
 import type { Language } from "@/lib/occasion";
 import { revealByType } from "@/lib/reveal";
-import Envelope, { type EnvelopeHandle } from "@/components/objects/Envelope";
-import GiftBox, { type GiftBoxHandle } from "@/components/objects/GiftBox";
-import Balloon, { type BalloonHandle } from "@/components/objects/Balloon";
-import WishLantern, { type WishLanternHandle } from "@/components/objects/WishLantern";
-import SecretReveal, { type SecretRevealHandle } from "@/components/objects/SecretReveal";
+
+const timings: Record<"envelope" | "gift", number> = {
+  envelope: 1150,
+  gift: 1050,
+};
 
 export default function RevealExperience({
   type,
@@ -25,70 +25,105 @@ export default function RevealExperience({
   onComplete?: () => void;
   resetKey?: number;
 }) {
-  const meta = revealByType(type);
+  const safeType: "envelope" | "gift" = type === "gift" ? "gift" : "envelope";
+  const meta = revealByType(safeType);
   const [opened, setOpened] = useState(false);
   const ar = lang === "ar";
-  const envelopeRef = useRef<EnvelopeHandle>(null);
-  const giftRef = useRef<GiftBoxHandle>(null);
-  const balloonRef = useRef<BalloonHandle>(null);
-  const lanternRef = useRef<WishLanternHandle>(null);
-  const secretRef = useRef<SecretRevealHandle>(null);
 
-  const reset = async () => {
-    setOpened(false);
-    if (type === "envelope") await envelopeRef.current?.close();
-    if (type === "gift") await giftRef.current?.close();
-    if (type === "balloon") await balloonRef.current?.reset();
-    if (type === "wish") await lanternRef.current?.reset();
-    if (type === "secret") await secretRef.current?.reset();
-  };
+  useEffect(() => setOpened(false), [safeType, resetKey]);
 
-  useEffect(() => {
-    void reset();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [type, resetKey]);
-
-  const open = async () => {
+  const open = () => {
     if (opened) return;
     setOpened(true);
-
-    if (type === "envelope") await envelopeRef.current?.open();
-    if (type === "gift") await giftRef.current?.open();
-    if (type === "balloon") await balloonRef.current?.pop();
-    if (type === "wish") await lanternRef.current?.release();
-    if (type === "secret") await secretRef.current?.reveal();
-
-    if (onComplete) window.setTimeout(onComplete, 340);
+    if (onComplete) window.setTimeout(onComplete, timings[safeType]);
   };
 
   return (
     <motion.div
-      className={`reveal-object-card reveal-object-card--${type} ${opened ? "is-open" : ""}`}
-      initial={{ opacity: 0, y: 10, scale: 0.985 }}
+      className={`reveal-scene-v7 reveal-scene-v7--${safeType} ${opened ? "is-open" : ""}`}
+      key={safeType}
+      initial={{ opacity: 0, y: 8, scale: 0.985 }}
       animate={{ opacity: 1, y: 0, scale: 1 }}
-      transition={{ duration: 0.45, ease: [0.16, 1, 0.3, 1] }}
+      transition={{ duration: 0.42, ease: [0.22, 1, 0.36, 1] }}
     >
-      <div className="reveal-object-deco reveal-object-deco--one" aria-hidden="true">♡</div>
-      <div className="reveal-object-deco reveal-object-deco--two" aria-hidden="true">✦</div>
+      <div className="reveal-ambient-v7" aria-hidden="true" />
 
-      <div className="reveal-object-stage">
-        {type === "envelope" && <Envelope ref={envelopeRef} sealColor="#f45d73" className="reveal-object reveal-object--envelope" />}
-        {type === "gift" && <GiftBox ref={giftRef} ribbonColor="#f45d73" className="reveal-object reveal-object--gift" />}
-        {type === "balloon" && <Balloon ref={balloonRef} color="#b58cff" className="reveal-object reveal-object--balloon" />}
-        {type === "wish" && <WishLantern ref={lanternRef} className="reveal-object reveal-object--wish" />}
-        {type === "secret" && <SecretReveal ref={secretRef} className="reveal-object reveal-object--secret" />}
-      </div>
+      <motion.div
+        className={`reveal-object-v7 reveal-object-v7--${safeType}`}
+        animate={
+          opened
+            ? safeType === "envelope"
+              ? { y: 36, scale: 1.06, rotate: -1.5 }
+              : { y: -8, scale: [1, 1.04, 0.98, 1.02], rotate: [0, -1.2, 1.2, 0] }
+            : { y: 0, scale: 1, rotate: 0, opacity: 1 }
+        }
+        transition={{ duration: 0.9, ease: [0.22, 1, 0.36, 1] }}
+      >
+        <img
+          className={`reveal-image-v7 reveal-image-v7--${safeType}`}
+          src={meta.image}
+          alt={meta.label[lang]}
+          referrerPolicy="no-referrer"
+        />
+      </motion.div>
 
-      <div className="reveal-object-copy">
-        <span>{meta.label[lang]}</span>
-        <p>{meta.short[lang]}</p>
-        {interactive && (
-          <button onClick={open} disabled={opened}>
-            <span>{opened ? (ar ? "جاري الفتح…" : "Opening…") : meta.action[lang]}</span>
-            {!opened && (ar ? <ArrowLeft size={16} /> : <ArrowRight size={16} />)}
-          </button>
+      <AnimatePresence>
+        {opened && (
+          <>
+            {safeType === "envelope" && (
+              <motion.div
+                className="reveal-letter-slip-v7"
+                initial={{ y: 120, opacity: 0, scale: 0.94 }}
+                animate={{ y: 0, opacity: 1, scale: 1 }}
+                exit={{ opacity: 0 }}
+                transition={{ delay: 0.18, duration: 0.62, ease: [0.16, 1, 0.3, 1] }}
+              >
+                <span>ForYou</span>
+                <i>♡</i>
+              </motion.div>
+            )}
+
+            {safeType === "gift" && (
+              <div className="reveal-confetti-v7" aria-hidden="true">
+                {[0, 1, 2, 3, 4, 5, 6].map((item) => (
+                  <motion.i
+                    key={item}
+                    initial={{ x: 0, y: 0, opacity: 0, rotate: 0 }}
+                    animate={{
+                      x: [0, (item - 3) * 28],
+                      y: [0, -75 - Math.abs(item - 3) * 8],
+                      opacity: [0, 1, 0],
+                      rotate: [0, item % 2 ? 110 : -110],
+                    }}
+                    transition={{ duration: 0.9, delay: item * 0.035 }}
+                  />
+                ))}
+              </div>
+            )}
+
+            <motion.div
+              className="reveal-opened-v7"
+              initial={{ opacity: 0, scale: 0.8 }}
+              animate={{ opacity: 1, scale: 1 }}
+              transition={{ delay: 0.45 }}
+            >
+              <Check size={18} />
+            </motion.div>
+          </>
         )}
+      </AnimatePresence>
+
+      <div className="reveal-meta-v7">
+        <span>{meta.label[lang]}</span>
+        <small>{meta.short[lang]}</small>
       </div>
+
+      {interactive && !opened && (
+        <button type="button" className="reveal-open-v7" onClick={open}>
+          <span>{meta.action[lang]}</span>
+          {ar ? <ArrowLeft size={16} /> : <ArrowRight size={16} />}
+        </button>
+      )}
     </motion.div>
   );
 }
